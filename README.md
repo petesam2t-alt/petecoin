@@ -1,181 +1,88 @@
-# 🐾 PeteCoin (PETE)
+# Petebit (PBIT)
 
-A community-driven fungible token for pet lovers, built on the Stacks blockchain using Clarity smart contracts.
+A simple, secure fungible token built on the Stacks blockchain with Clarity and Clarinet.
 
-## 🎯 Overview
+## Overview
 
-PeteCoin is a SIP-010 compliant fungible token designed to bring together pet enthusiasts and support pet-related initiatives. Whether you're a dog lover, cat enthusiast, or supporter of any furry (or not-so-furry) friends, PeteCoin provides a way to participate in a community-driven ecosystem.
+Petebit is a fungible token designed for experiments and community use. This repository contains a Clarinet project with a single smart contract implementing core FT functionality: mint, burn, transfer, and metadata getters.
 
-## 🚀 Features
+## Token Details
 
-- **SIP-010 Compliant**: Fully compatible with the Stacks fungible token standard
-- **Community Focused**: Designed for pet lovers and animal welfare initiatives
-- **Secure**: Built with Clarity smart contracts for maximum security and transparency
-- **Utility Functions**: Includes batch transfers for airdrops and memo transfers for enhanced functionality
+- Name: Petebit
+- Symbol: PBIT
+- Decimals: 6
+- Standard: Minimal FT (Clarity)
 
-## 📊 Token Details
+## Prerequisites
 
-- **Name**: PeteCoin
-- **Symbol**: PETE
-- **Decimals**: 6
-- **Total Supply**: 1,000,000,000 PETE (1 billion tokens)
-- **Blockchain**: Stacks
-
-## 🛠️ Development Setup
-
-### Prerequisites
-
-- [Clarinet](https://github.com/hirosystems/clarinet) - Stacks development environment
-- Node.js (v16 or higher)
+- Clarinet CLI (3.x)
+- Node.js and npm (recommended for developer tooling)
 - Git
 
-### Installation
-
+Install Clarinet if needed:
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/petecoin.git
-cd petecoin
-
-# Install dependencies
-npm install
+npm install -g @hirosystems/clarinet
 ```
 
-### Testing
+## Project Structure
+
+- `Clarinet.toml` — Project configuration and contract registration
+- `contracts/petebit.clar` — Petebit token smart contract
+- `settings/` — Clarinet settings
+- `tests/` — Place tests here (optional)
+
+## Common Commands
 
 ```bash
-# Run all tests
-clarinet test
-
-# Run specific test file
-clarinet test tests/petecoin_test.ts
-
-# Check contract syntax
+# Validate contracts
 clarinet check
-```
 
-### Local Development
+# Start an interactive console
+clarinet console
 
-```bash
-# Start local development environment
-clarinet integrate
-
-# Deploy to local testnet
-clarinet deploy --testnet
-```
-
-## 🔧 Smart Contract Functions
-
-### SIP-010 Standard Functions
-
-- `transfer(amount, from, to, memo)` - Transfer tokens between addresses
-- `get-name()` - Returns token name
-- `get-symbol()` - Returns token symbol
-- `get-decimals()` - Returns decimal places
-- `get-balance(who)` - Returns balance for an address
-- `get-total-supply()` - Returns total token supply
-- `get-token-uri()` - Returns token metadata URI
-
-### Administrative Functions
-
-- `mint(amount, to)` - Mint new tokens (owner only)
-- `burn(amount, from)` - Burn tokens
-- `set-token-uri(value)` - Update token metadata URI (owner only)
-- `batch-transfer(recipients)` - Transfer to multiple recipients (owner only)
-
-### Utility Functions
-
-- `transfer-memo(amount, to, memo)` - Transfer with memo message
-
-## 🔐 Security Features
-
-- **Owner-only minting**: Only the contract owner can mint new tokens
-- **Burn protection**: Users can only burn their own tokens
-- **Transfer validation**: Ensures only token owners can initiate transfers
-- **Input validation**: All functions validate input parameters
-
-## 📝 Usage Examples
-
-### Basic Transfer
-
-```clarity
-;; Transfer 1000 PETE tokens
-(contract-call? .petecoin transfer u1000000 tx-sender 'SP1234567890ABCDEF recipient-address none)
-```
-
-### Transfer with Memo
-
-```clarity
-;; Transfer with a message
-(contract-call? .petecoin transfer-memo u500000 'SP1234567890ABCDEF "For pet food!")
-```
-
-### Check Balance
-
-```clarity
-;; Get balance for an address
-(contract-call? .petecoin get-balance 'SP1234567890ABCDEF)
-```
-
-## 🧪 Testing
-
-The project includes comprehensive tests covering:
-
-- Token initialization and metadata
-- Transfer functionality
-- Minting and burning
-- Administrative functions
-- Error handling
-- Edge cases
-
-Run tests with:
-```bash
+# Run tests (if present)
 clarinet test
 ```
 
-## 🚀 Deployment
+## Contract Interface
 
-### Testnet Deployment
+Read-only
+- `(get-name) -> (string-utf8 32)`
+- `(get-symbol) -> (string-utf8 10)`
+- `(get-decimals) -> uint`
+- `(get-total-supply) -> uint`
+- `(get-balance-of (who principal)) -> uint`
+- `(get-token-uri) -> (optional (string-utf8 256))`
 
-```bash
-# Deploy to Stacks testnet
-clarinet deploy --testnet
+Public
+- `(mint (amount uint) (recipient principal)) -> (response bool uint)`
+- `(burn (amount uint) (owner principal)) -> (response bool uint)`
+- `(transfer (amount uint) (sender principal) (recipient principal)) -> (response bool uint)`
+- `(set-token-uri (value (optional (string-utf8 256)))) -> (response bool uint)`
+- `(transfer-ownership (new-owner principal)) -> (response bool uint)`
+
+Notes
+- The deployer becomes the initial `token-owner` and is the only address allowed to call `mint`, `set-token-uri`, and `transfer-ownership`.
+
+## Usage Examples (Clarinet console)
+
+```clarity
+;; Mint 1,000,000 micro-PBIT (i.e., 1 PBIT with 6 decimals) to an address
+(contract-call? .petebit mint u1000000 'SP2C2...ABC)
+
+;; Transfer 0.5 PBIT (500,000 micro) from the sender to a recipient
+(contract-call? .petebit transfer u500000 tx-sender 'SP3F4...XYZ)
+
+;; Read a balance
+(contract-call? .petebit get-balance-of 'SP2C2...ABC)
 ```
 
-### Mainnet Deployment
+## Security
 
-```bash
-# Deploy to Stacks mainnet (use with caution)
-clarinet deploy --mainnet
-```
+- Only the `token-owner` may mint or change token metadata.
+- Transfers require the `sender` to be the transaction sender.
+- Arithmetic is safe by default in Clarity; underflows/overflows abort execution.
 
-## 🤝 Contributing
+## License
 
-We welcome contributions from the pet-loving community! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
-
-## 🐕 Community
-
-Join our community of pet lovers:
-
-- **Discord**: [Join our server](#)
-- **Twitter**: [@PeteCoinSTX](#)
-- **Website**: [petecoin.io](#)
-
-## ⚖️ License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Thanks to the Stacks community for the amazing blockchain infrastructure
-- Inspired by pet lovers everywhere
-- Built with ❤️ for our furry friends
-
----
-
-**Disclaimer**: This is a community token project. Please do your own research and understand the risks before participating in any cryptocurrency activities.
+MIT
